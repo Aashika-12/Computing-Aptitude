@@ -1,0 +1,164 @@
+#include <iostream>
+#include <iomanip>
+#include <string>
+using namespace std;
+
+// Structure to store each menu item
+struct MenuItem {
+    int id;
+    string name;
+    double price;
+};
+
+// Structure to store customer order
+struct Order {
+    string customerName;
+    int itemIds[10];
+    int quantities[10];
+    int totalItems;
+    double totalAmount;
+};
+
+// Function prototypes
+void displayMenu(MenuItem menu[], int size);
+void takeOrder(MenuItem menu[], int size, Order &order);
+double calculateTotal(MenuItem menu[], Order &order);
+void printBill(MenuItem menu[], Order &order);
+void viewAllOrders(Order orders[], int totalOrders);
+
+int main() {
+    const int MENU_SIZE = 5;
+    const int MAX_ORDERS = 20;
+
+    // Initialize menu
+    MenuItem menu[MENU_SIZE] = {
+        {1, "Cappuccino", 120.0},
+        {2, "Espresso", 100.0},
+        {3, "Cold Coffee", 90.0},
+        {4, "Brownie", 150.0},
+        {5, "Sandwich", 130.0}
+    };
+
+    Order orders[MAX_ORDERS];
+    int totalOrders = 0;
+    int choice;
+
+    do {
+        cout << "\n========== CAFE BILLING SYSTEM ==========\n";
+        cout << "1. Display Menu\n";
+        cout << "2. New Order\n";
+        cout << "3. View All Orders\n";
+        cout << "4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch(choice) {
+            case 1:
+                displayMenu(menu, MENU_SIZE);
+                break;
+            case 2:
+                if(totalOrders < MAX_ORDERS) {
+                    cout << "\nEnter customer name: ";
+                    cin.ignore();
+                    getline(cin, orders[totalOrders].customerName);
+                    takeOrder(menu, MENU_SIZE, orders[totalOrders]);
+                    orders[totalOrders].totalAmount = calculateTotal(menu, orders[totalOrders]);
+                    printBill(menu, orders[totalOrders]);
+                    totalOrders++;
+                } else {
+                    cout << "\nOrder limit reached!\n";
+                }
+                break;
+            case 3:
+                viewAllOrders(orders, totalOrders);
+                break;
+            case 4:
+                cout << "\nThank you for visiting our Cafe! ☕\n";
+                break;
+            default:
+                cout << "\nInvalid choice! Try again.\n";
+        }
+
+    } while(choice != 4);
+
+    return 0;
+}
+
+// Function to display the cafe menu
+void displayMenu(MenuItem menu[], int size) {
+    cout << "\n---------- MENU ----------\n";
+    cout << left << setw(5) << "ID" << setw(20) << "Item" << "Price (Rs)\n";
+    cout << "--------------------------\n";
+    for(int i = 0; i < size; i++) {
+        cout << left << setw(5) << menu[i].id << setw(20) << menu[i].name << menu[i].price << endl;
+    }
+    cout << "--------------------------\n";
+}
+
+// Function to take customer order
+void takeOrder(MenuItem menu[], int size, Order &order) {
+    displayMenu(menu, size);
+    cout << "\nHow many items do you want to order? ";
+    cin >> order.totalItems;
+
+    for(int i = 0; i < order.totalItems; i++) {
+        cout << "\nEnter item ID for item " << i+1 << ": ";
+        cin >> order.itemIds[i];
+        cout << "Enter quantity: ";
+        cin >> order.quantities[i];
+    }
+}
+
+// Function to calculate total bill
+double calculateTotal(MenuItem menu[], Order &order) {
+    double subtotal = 0.0;
+    for(int i = 0; i < order.totalItems; i++) {
+        int id = order.itemIds[i];
+        int qty = order.quantities[i];
+        subtotal += menu[id - 1].price * qty;
+    }
+    return subtotal;
+}
+
+// Function to print bill for the customer
+void printBill(MenuItem menu[], Order &order) {
+    double subtotal = calculateTotal(menu, order);
+    double tax = subtotal * 0.20; // 5% GST
+    double total = subtotal + tax;
+
+    cout << "\n=========== BILL ===========\n";
+    cout << "Customer: " << order.customerName << endl;
+    cout << "----------------------------\n";
+    cout << left << setw(20) << "Item" << setw(10) << "Qty" << "Price\n";
+    cout << "----------------------------\n";
+
+    for(int i = 0; i < order.totalItems; i++) {
+        int id = order.itemIds[i];
+        int qty = order.quantities[i];
+        cout << left << setw(20) << menu[id - 1].name
+             << setw(10) << qty
+             << menu[id - 1].price * qty << endl;
+    }
+
+    cout << "----------------------------\n";
+    cout << "Subtotal: Rs " << subtotal << endl;
+    cout << "GST (20%): Rs " << tax << endl;
+    cout << "Total: Rs " << total << endl;
+    cout << "============================\n";
+}
+
+// Function to display all previous orders
+void viewAllOrders(Order orders[], int totalOrders) {
+    if(totalOrders == 0) {
+        cout << "\nNo previous orders.\n";
+        return;
+    }
+
+    cout << "\n======= ALL ORDERS =======\n";
+    for(int i = 0; i < totalOrders; i++) {
+        cout << i+1 << ". " << orders[i].customerName
+             << " - Rs " << fixed << setprecision(2)
+             << orders[i].totalAmount << endl;
+    }
+    cout << "==========================\n";
+}
